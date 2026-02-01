@@ -75,10 +75,7 @@ class CommentThread extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color:
-                    isCurrentUser
-                        ? Colors.blue.shade50
-                        : Theme.of(context).cardColor,
+                color: Theme.of(context).cardColor,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color:
