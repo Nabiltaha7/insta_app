@@ -32,7 +32,7 @@
 ## لقطات الشاشة
 
 ### شاشة تسجيل الدخول
-![شاشة تسجيل الدخول](images/screenshots/login_screen.jpg)
+![شاشة تسجيل الدخول](https://raw.githubusercontent.com/Nabiltaha7/insta_app/main/images/screenshots/login_screen.jpg)
 
 ### شاشة إنشاء الحساب
 ![شاشة إنشاء الحساب](images/screenshots/signup_screen.jpg)
