@@ -38,7 +38,7 @@ class AuthPage extends GetView<AuthController> {
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.purple.withOpacity(0.3),
+                            color: Colors.purple.withValues(alpha: 0.3),
                             blurRadius: 20,
                             offset: const Offset(0, 10),
                           ),
@@ -79,7 +79,7 @@ class AuthPage extends GetView<AuthController> {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 20,
                       offset: const Offset(0, 10),
                     ),
@@ -149,7 +149,7 @@ class AuthPage extends GetView<AuthController> {
             'سجل دخولك للمتابعة',
             style: TextStyle(
               fontSize: 16,
-              color: Get.theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+              color: Get.theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
             ),
           ),
           const SizedBox(height: 32),
@@ -207,7 +207,7 @@ class AuthPage extends GetView<AuthController> {
             'انضم إلى مجتمعنا اليوم',
             style: TextStyle(
               fontSize: 16,
-              color: Get.theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+              color: Get.theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
             ),
           ),
           const SizedBox(height: 32),
@@ -284,7 +284,7 @@ class AuthPage extends GetView<AuthController> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Get.theme.dividerColor.withOpacity(0.2),
+          color: Get.theme.dividerColor.withValues(alpha: 0.2),
         ),
         color: Get.theme.cardColor,
       ),
@@ -301,14 +301,14 @@ class AuthPage extends GetView<AuthController> {
         decoration: InputDecoration(
           labelText: label,
           labelStyle: TextStyle(
-            color: Get.theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+            color: Get.theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
             fontSize: 14,
           ),
           prefixIcon: Container(
             margin: const EdgeInsets.all(12),
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.blue.withOpacity(0.1),
+              color: Colors.blue.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
@@ -355,11 +355,11 @@ class AuthPage extends GetView<AuthController> {
         ) : null,
         color: isPrimary ? null : Get.theme.cardColor,
         border: isPrimary ? null : Border.all(
-          color: Get.theme.dividerColor.withOpacity(0.2),
+          color: Get.theme.dividerColor.withValues(alpha: 0.2),
         ),
         boxShadow: isPrimary ? [
           BoxShadow(
-            color: Colors.blue.withOpacity(0.3),
+            color: Colors.blue.withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),

@@ -48,20 +48,20 @@ class AuthController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    
+
     // Initialize AuthService if not already initialized
     if (!Get.isRegistered<AuthService>()) {
       Get.put(AuthService());
     }
-    
+
     // التحقق من حالة المصادقة عند بدء التشغيل
     checkAuthState();
-    
+
     // مراقبة تغييرات حالة المصادقة
     supabase.auth.onAuthStateChange.listen((data) {
       final event = data.event;
       final session = data.session;
-      
+
       if (event == AuthChangeEvent.signedIn && session != null) {
         // المستخدم سجل دخول
         clearForm();
@@ -76,7 +76,7 @@ class AuthController extends GetxController {
       }
     });
   }
-  
+
   // Check current authentication state
   void checkAuthState() {
     final user = supabase.auth.currentUser;
@@ -86,7 +86,7 @@ class AuthController extends GetxController {
       isSignUp.value = false;
     }
   }
-  
+
   @override
   void onClose() {
     // Dispose controllers safely
@@ -95,7 +95,7 @@ class AuthController extends GetxController {
       _passwordController?.dispose();
       _emailController?.dispose();
       _fullNameController?.dispose();
-      
+
       // Set to null after disposal
       _usernameController = null;
       _passwordController = null;
@@ -142,7 +142,7 @@ class AuthController extends GetxController {
     } catch (e) {
       debugPrint('Error disposing old controllers: $e');
     }
-    
+
     // Set to null so they will be recreated when accessed
     _usernameController = null;
     _passwordController = null;
@@ -154,44 +154,42 @@ class AuthController extends GetxController {
   Future<void> signIn() async {
     if (!signInFormKey.currentState!.validate()) return;
 
-    await ErrorHandler.safeAsyncOperation(
-      () async {
-        isLoading.value = true;
+    await ErrorHandler.safeAsyncOperation(() async {
+      isLoading.value = true;
 
-        // Get user email by username
-        final userResponse = await supabase
-            .from(AppConstants.usersTable)
-            .select('email')
-            .eq('username', usernameController.text.trim())
-            .maybeSingle();
+      // Get user email by username
+      final userResponse =
+          await supabase
+              .from(AppConstants.usersTable)
+              .select('email')
+              .eq('username', usernameController.text.trim())
+              .maybeSingle();
 
-        if (userResponse == null) {
-          throw Exception('اسم المستخدم غير موجود');
-        }
+      if (userResponse == null) {
+        throw Exception('اسم المستخدم غير موجود');
+      }
 
-        final email = userResponse['email'];
+      final email = userResponse['email'];
 
-        final response = await supabase.auth.signInWithPassword(
-          email: email,
-          password: passwordController.text,
+      final response = await supabase.auth.signInWithPassword(
+        email: email,
+        password: passwordController.text,
+      );
+
+      final user = response.user;
+
+      if (user != null) {
+        // دخول ناجح
+        Get.snackbar(
+          'نجح تسجيل الدخول',
+          'مرحباً بك مرة أخرى!',
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
         );
 
-        final user = response.user;
-
-        if (user != null) {
-          // دخول ناجح
-          Get.snackbar(
-            'نجح تسجيل الدخول',
-            'مرحباً بك مرة أخرى!',
-            backgroundColor: Colors.green,
-            colorText: Colors.white,
-          );
-
-          Get.offAllNamed(AppConstants.homeRoute);
-        }
-      },
-      context: 'تسجيل الدخول',
-    );
+        Get.offAllNamed(AppConstants.homeRoute);
+      }
+    }, context: 'تسجيل الدخول');
 
     isLoading.value = false;
   }
@@ -202,85 +200,76 @@ class AuthController extends GetxController {
   }
 
   // Sign up with email and password
-
-  // Sign up with email and password
   Future<void> signUp() async {
     if (!signUpFormKey.currentState!.validate()) return;
 
-    await ErrorHandler.safeAsyncOperation(
-      () async {
-        isLoading.value = true;
+    await ErrorHandler.safeAsyncOperation(() async {
+      isLoading.value = true;
 
-        // التحقق من عدم تكرار البيانات
-        final userExists = await checkUserExists(
-          emailController.text.trim(),
-          usernameController.text.trim(),
+      // التحقق من عدم تكرار البيانات
+      final userExists = await checkUserExists(
+        emailController.text.trim(),
+        usernameController.text.trim(),
+      );
+
+      if (userExists) {
+        return;
+      }
+
+      // إنشاء الحساب
+      final response = await AuthHelper.signUpWithRateLimit(
+        email: emailController.text.trim(),
+        password: passwordController.text,
+        username: usernameController.text.trim(),
+        fullName: fullNameController.text.trim(),
+      );
+
+      // إذا تم إنشاء المستخدم بنجاح
+      if (response?.user != null) {
+        Get.snackbar(
+          'تم إنشاء الحساب',
+          'تم إرسال رسالة تأكيد إلى بريدك الإلكتروني. يرجى تأكيد البريد ثم تسجيل الدخول.',
+          backgroundColor: Colors.blue,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 6),
         );
 
-        if (userExists) {
-          return;
-        }
-
-        // إنشاء الحساب
-        final response = await AuthHelper.signUpWithRateLimit(
-          email: emailController.text.trim(),
-          password: passwordController.text,
-          username: usernameController.text.trim(),
-          fullName: fullNameController.text.trim(),
+        // الرجوع لواجهة تسجيل الدخول
+        isSignUp.value = false;
+        passwordController.clear();
+      }
+      // حالة Rate Limit (تم إنشاء الحساب لكن فشل إرسال الإيميل)
+      else if (response == null) {
+        Get.snackbar(
+          'تم إنشاء الحساب',
+          'تم إنشاء حسابك بنجاح. يرجى محاولة تسجيل الدخول.',
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
         );
 
-        // إذا تم إنشاء المستخدم بنجاح
-        if (response?.user != null) {
-          Get.snackbar(
-            'تم إنشاء الحساب',
-            'تم إرسال رسالة تأكيد إلى بريدك الإلكتروني. يرجى تأكيد البريد ثم تسجيل الدخول.',
-            backgroundColor: Colors.blue,
-            colorText: Colors.white,
-            duration: const Duration(seconds: 6),
-          );
-
-          // الرجوع لواجهة تسجيل الدخول
-          isSignUp.value = false;
-          passwordController.clear();
-        }
-        // حالة Rate Limit (تم إنشاء الحساب لكن فشل إرسال الإيميل)
-        else if (response == null) {
-          Get.snackbar(
-            'تم إنشاء الحساب',
-            'تم إنشاء حسابك بنجاح. يرجى محاولة تسجيل الدخول.',
-            backgroundColor: Colors.green,
-            colorText: Colors.white,
-          );
-
-          isSignUp.value = false;
-          passwordController.clear();
-        }
-      },
-      context: 'إنشاء الحساب',
-    );
+        isSignUp.value = false;
+        passwordController.clear();
+      }
+    }, context: 'إنشاء الحساب');
 
     isLoading.value = false;
   }
 
   // Sign out
   Future<void> signOut() async {
-    await ErrorHandler.safeAsyncOperation(
-      () async {
-        // Reset controllers before signing out
-        resetControllers();
-        
-        await supabase.auth.signOut();
+    await ErrorHandler.safeAsyncOperation(() async {
+      // Reset controllers before signing out
+      resetControllers();
 
-        // تنظيف البيانات
-        isSignUp.value = false;
+      await supabase.auth.signOut();
 
-        // الانتقال لصفحة تسجيل الدخول
-        Get.offAllNamed(AppConstants.authRoute);
-      },
-      context: 'تسجيل الخروج',
-    );
+      // تنظيف البيانات
+      isSignUp.value = false;
+
+      // الانتقال لصفحة تسجيل الدخول
+      Get.offAllNamed(AppConstants.authRoute);
+    }, context: 'تسجيل الخروج');
   }
-
 
   // Check if user is authenticated
   bool get isAuthenticated => supabase.auth.currentUser != null;

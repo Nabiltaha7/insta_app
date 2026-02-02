@@ -54,11 +54,12 @@ class ProfileEditController extends GetxController {
       final currentUser = supabase.auth.currentUser;
       if (currentUser == null) return;
 
-      final userData = await supabase
-          .from(AppConstants.usersTable)
-          .select('*')
-          .eq('id', currentUser.id)
-          .single();
+      final userData =
+          await supabase
+              .from(AppConstants.usersTable)
+              .select('*')
+              .eq('id', currentUser.id)
+              .single();
 
       // Fill form with current data
       usernameController.text = userData['username'] ?? '';
@@ -66,11 +67,10 @@ class ProfileEditController extends GetxController {
       bioController.text = userData['bio'] ?? '';
       websiteController.text = userData['website'] ?? '';
       phoneController.text = userData['phone_number'] ?? '';
-      
+
       username.value = userData['username'] ?? '';
       currentProfileImage.value = userData['profile_image_url'];
       selectedGender.value = userData['gender'] ?? '';
-
     } catch (error) {
       Get.snackbar(
         'خطأ',
@@ -131,9 +131,9 @@ class ProfileEditController extends GetxController {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.orange.withOpacity(0.1),
+                color: Colors.orange.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [
@@ -154,10 +154,7 @@ class ProfileEditController extends GetxController {
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: const Text('موافق'),
-          ),
+          TextButton(onPressed: () => Get.back(), child: const Text('موافق')),
         ],
       ),
     );
@@ -172,10 +169,10 @@ class ProfileEditController extends GetxController {
         maxHeight: 512,
         imageQuality: 80,
       );
-      
+
       if (image != null) {
         final file = File(image.path);
-        
+
         // Check file size
         if (_isFileSizeValid(file)) {
           selectedImage.value = file;
@@ -208,18 +205,17 @@ class ProfileEditController extends GetxController {
       final currentUser = supabase.auth.currentUser;
       if (currentUser == null) return null;
 
-      final fileName = 'profiles/${currentUser.id}_${DateTime.now().millisecondsSinceEpoch}.jpg';
-      
+      final fileName =
+          'profiles/${currentUser.id}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+
       // Upload to Supabase Storage
       await supabase.storage
           .from('media')
           .uploadBinary(fileName, await selectedImage.value!.readAsBytes());
-      
+
       // Get public URL
-      final publicUrl = supabase.storage
-          .from('media')
-          .getPublicUrl(fileName);
-      
+      final publicUrl = supabase.storage.from('media').getPublicUrl(fileName);
+
       return publicUrl;
     } catch (error) {
       Get.snackbar(
@@ -238,12 +234,13 @@ class ProfileEditController extends GetxController {
       final currentUser = supabase.auth.currentUser;
       if (currentUser == null) return false;
 
-      final existingUser = await supabase
-          .from(AppConstants.usersTable)
-          .select('id')
-          .eq('username', username)
-          .neq('id', currentUser.id) // Exclude current user
-          .maybeSingle();
+      final existingUser =
+          await supabase
+              .from(AppConstants.usersTable)
+              .select('id')
+              .eq('username', username)
+              .neq('id', currentUser.id) // Exclude current user
+              .maybeSingle();
 
       return existingUser == null;
     } catch (error) {
@@ -276,7 +273,9 @@ class ProfileEditController extends GetxController {
 
     // Check username availability
     if (usernameController.text.trim() != username.value) {
-      final isAvailable = await _isUsernameAvailable(usernameController.text.trim());
+      final isAvailable = await _isUsernameAvailable(
+        usernameController.text.trim(),
+      );
       if (!isAvailable) {
         Get.snackbar(
           'خطأ',
@@ -322,7 +321,8 @@ class ProfileEditController extends GetxController {
           .eq('id', currentUser.id);
 
       // Update posts with new profile data if username or image changed
-      if (usernameController.text.trim() != username.value || profileImageUrl != null) {
+      if (usernameController.text.trim() != username.value ||
+          profileImageUrl != null) {
         await _updateUserPostsData(
           currentUser.id,
           usernameController.text.trim(),
@@ -346,7 +346,6 @@ class ProfileEditController extends GetxController {
 
       // Go back
       Get.back();
-
     } catch (error) {
       Get.snackbar(
         'خطأ',
@@ -360,7 +359,11 @@ class ProfileEditController extends GetxController {
   }
 
   // Update user data in all posts (for consistency)
-  Future<void> _updateUserPostsData(String userId, String newUsername, String? newProfileImage) async {
+  Future<void> _updateUserPostsData(
+    String userId,
+    String newUsername,
+    String? newProfileImage,
+  ) async {
     try {
       final updateData = {
         'username': newUsername,
@@ -372,17 +375,10 @@ class ProfileEditController extends GetxController {
       }
 
       // Update posts table
-      await supabase
-          .from('posts')
-          .update(updateData)
-          .eq('user_id', userId);
+      await supabase.from('posts').update(updateData).eq('user_id', userId);
 
       // Update comments table
-      await supabase
-          .from('comments')
-          .update(updateData)
-          .eq('user_id', userId);
-
+      await supabase.from('comments').update(updateData).eq('user_id', userId);
     } catch (error) {
       // Ignore errors in updating posts data
       debugPrint('Failed to update posts data: $error');
@@ -398,7 +394,7 @@ class ProfileEditController extends GetxController {
         maxHeight: 512,
         imageQuality: 80,
       );
-      
+
       if (photo != null) {
         selectedImage.value = File(photo.path);
       }
@@ -426,10 +422,7 @@ class ProfileEditController extends GetxController {
           children: [
             const Text(
               'اختر صورة الملف الشخصي',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
             ListTile(
@@ -451,7 +444,10 @@ class ProfileEditController extends GetxController {
             if (currentProfileImage.value != null)
               ListTile(
                 leading: const Icon(Icons.delete, color: Colors.red),
-                title: const Text('حذف الصورة', style: TextStyle(color: Colors.red)),
+                title: const Text(
+                  'حذف الصورة',
+                  style: TextStyle(color: Colors.red),
+                ),
                 onTap: () {
                   Get.back();
                   _removeProfileImage();

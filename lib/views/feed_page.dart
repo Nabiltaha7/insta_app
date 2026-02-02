@@ -31,9 +31,9 @@ class FeedPage extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Colors.purple.withOpacity(0.1),
-                      Colors.blue.withOpacity(0.1),
-                      Colors.pink.withOpacity(0.1),
+                      Colors.purple.withValues(alpha: 0.1),
+                      Colors.blue.withValues(alpha: 0.1),
+                      Colors.pink.withValues(alpha: 0.1),
                     ],
                   ),
                 ),
@@ -83,7 +83,7 @@ class FeedPage extends StatelessWidget {
                                     'اكتشف المحتوى الجديد',
                                     style: TextStyle(
                                       fontSize: 14,
-                                      color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+                                      color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
                                     ),
                                   ),
                                 ],
@@ -197,10 +197,10 @@ class FeedPage extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: Get.theme.cardColor.withOpacity(0.8),
+          color: Get.theme.cardColor.withValues(alpha: 0.8),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: Get.theme.dividerColor.withOpacity(0.2),
+            color: Get.theme.dividerColor.withValues(alpha: 0.2),
           ),
         ),
         child: Stack(
@@ -239,13 +239,13 @@ class FeedPage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
+                color: Colors.blue.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.photo_library_outlined,
                 size: 64,
-                color: Colors.blue.withOpacity(0.7),
+                color: Colors.blue.withValues(alpha: 0.7),
               ),
             ),
             const SizedBox(height: 24),
@@ -262,7 +262,7 @@ class FeedPage extends StatelessWidget {
               'كن أول من ينشر محتوى رائع',
               style: TextStyle(
                 fontSize: 16,
-                color: Get.theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+                color: Get.theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
               ),
             ),
             const SizedBox(height: 32),
@@ -274,7 +274,7 @@ class FeedPage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(25),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.blue.withOpacity(0.3),
+                    color: Colors.blue.withValues(alpha: 0.3),
                     blurRadius: 15,
                     offset: const Offset(0, 5),
                   ),
@@ -313,7 +313,6 @@ class FeedPage extends StatelessWidget {
   }
 
   void _sharePost(post) {
-    // TODO: Implement share functionality
     Get.snackbar(
       'مشاركة',
       'سيتم تطبيق المشاركة قريباً',

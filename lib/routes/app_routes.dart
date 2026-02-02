@@ -17,19 +17,15 @@ import '../constants/app_constants.dart';
 class AppRoutes {
   static const String auth = AppConstants.authRoute;
   static const String home = AppConstants.homeRoute;
-  static const String createPost = '/create-post';
-  static const String comments = '/comments';
-  static const String profileEdit = '/profile-edit';
-  static const String settings = '/settings';
-  static const String userProfile = '/user-profile';
-  static const String myPosts = '/my-posts';
+  static const String createPost = AppConstants.createPost;
+  static const String comments = AppConstants.comments;
+  static const String profileEdit = AppConstants.profileEdit;
+  static const String settings = AppConstants.settings;
+  static const String userProfile = AppConstants.userProfile;
+  static const String myPosts = AppConstants.myPosts;
 
   static List<GetPage> routes = [
-    GetPage(
-      name: auth,
-      page: () => const AuthPage(),
-      binding: AuthBinding(),
-    ),
+    GetPage(name: auth, page: () => const AuthPage(), binding: AuthBinding()),
     GetPage(
       name: home,
       page: () => const HomePage(),

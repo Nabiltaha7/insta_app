@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/post_model.dart';
 import '../services/posts_service.dart';
 import '../utils/error_handler.dart';
+import 'package:insta/constants/app_constants.dart';
 
 class MyPostsController extends GetxController {
   late final PostsService _postsService;
@@ -19,13 +20,13 @@ class MyPostsController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    
+
     // Initialize PostsService if not already initialized
     if (!Get.isRegistered<PostsService>()) {
       Get.put(PostsService());
     }
     _postsService = Get.find<PostsService>();
-    
+
     loadMyPosts();
     _setupRealtimeSubscription();
   }
@@ -42,48 +43,23 @@ class MyPostsController extends GetxController {
       final currentUserId = supabase.auth.currentUser?.id;
       if (currentUserId == null) return;
 
-      _myPostsSubscription = supabase
-          .channel('my_posts_changes')
-          .onPostgresChanges(
-            event: PostgresChangeEvent.insert,
-            schema: 'public',
-            table: 'posts',
-            filter: PostgresChangeFilter(
-              type: PostgresChangeFilterType.eq,
-              column: 'user_id',
-              value: currentUserId,
-            ),
-            callback: (payload) {
-              _handleNewPost(payload.newRecord);
-            },
-          )
-          .onPostgresChanges(
-            event: PostgresChangeEvent.update,
-            schema: 'public',
-            table: 'posts',
-            filter: PostgresChangeFilter(
-              type: PostgresChangeFilterType.eq,
-              column: 'user_id',
-              value: currentUserId,
-            ),
-            callback: (payload) {
-              _handleUpdatedPost(payload.newRecord);
-            },
-          )
-          .onPostgresChanges(
-            event: PostgresChangeEvent.delete,
-            schema: 'public',
-            table: 'posts',
-            filter: PostgresChangeFilter(
-              type: PostgresChangeFilterType.eq,
-              column: 'user_id',
-              value: currentUserId,
-            ),
-            callback: (payload) {
-              _handleDeletedPost(payload.oldRecord['id']);
-            },
-          )
-          .subscribe();
+      _myPostsSubscription =
+          supabase
+              .channel('my_posts_changes')
+              .onPostgresChanges(
+                event: PostgresChangeEvent.insert,
+                schema: 'public',
+                table: AppConstants.postsTable,
+                filter: PostgresChangeFilter(
+                  type: PostgresChangeFilterType.eq,
+                  column: 'user_id',
+                  value: currentUserId,
+                ),
+                callback: (payload) {
+                  _handleNewPost(payload.newRecord);
+                },
+              )
+              .subscribe();
     } catch (e) {
       debugPrint('Error setting up my posts real-time subscription: $e');
     }
@@ -94,7 +70,7 @@ class MyPostsController extends GetxController {
     try {
       final newPost = PostModel.fromJson(postData);
       myPosts.insert(0, newPost);
-      
+
       Get.snackbar(
         'منشور جديد',
         'تم نشر منشورك بنجاح!',
@@ -108,45 +84,19 @@ class MyPostsController extends GetxController {
     }
   }
 
-  // Handle updated post from real-time
-  void _handleUpdatedPost(Map<String, dynamic> postData) {
-    try {
-      final updatedPost = PostModel.fromJson(postData);
-      final index = myPosts.indexWhere((post) => post.id == updatedPost.id);
-      
-      if (index != -1) {
-        myPosts[index] = updatedPost;
-      }
-    } catch (e) {
-      debugPrint('Error handling updated post: $e');
-    }
-  }
-
-  // Handle deleted post from real-time
-  void _handleDeletedPost(String postId) {
-    try {
-      myPosts.removeWhere((post) => post.id == postId);
-    } catch (e) {
-      debugPrint('Error handling deleted post: $e');
-    }
-  }
-
   // Load current user's posts
   Future<void> loadMyPosts() async {
-    await ErrorHandler.safeAsyncOperation(
-      () async {
-        isLoading.value = true;
+    await ErrorHandler.safeAsyncOperation(() async {
+      isLoading.value = true;
 
-        final currentUserId = supabase.auth.currentUser?.id;
-        if (currentUserId == null) {
-          throw Exception('يجب تسجيل الدخول أولاً');
-        }
+      final currentUserId = supabase.auth.currentUser?.id;
+      if (currentUserId == null) {
+        throw Exception('يجب تسجيل الدخول أولاً');
+      }
 
-        final posts = await _postsService.getUserPosts(currentUserId);
-        myPosts.value = posts;
-      },
-      context: 'تحميل منشوراتي',
-    );
+      final posts = await _postsService.getUserPosts(currentUserId);
+      myPosts.value = posts;
+    }, context: 'تحميل منشوراتي');
 
     isLoading.value = false;
   }
@@ -158,12 +108,13 @@ class MyPostsController extends GetxController {
       if (postIndex == -1) return;
 
       final currentPost = myPosts[postIndex];
-      
+
       // Update UI immediately for better UX
       final newLikeStatus = !currentPost.isLikedByCurrentUser;
-      final newLikesCount = newLikeStatus 
-        ? currentPost.likesCount + 1 
-        : currentPost.likesCount - 1;
+      final newLikesCount =
+          newLikeStatus
+              ? currentPost.likesCount + 1
+              : currentPost.likesCount - 1;
 
       myPosts[postIndex] = currentPost.copyWith(
         isLikedByCurrentUser: newLikeStatus,
@@ -172,7 +123,7 @@ class MyPostsController extends GetxController {
 
       // Then update database
       await _postsService.togglePostLike(postId);
-      
+
       // Get updated post data from database to ensure consistency
       final updatedPostData = await _postsService.getPostById(postId);
       if (updatedPostData != null) {
@@ -187,7 +138,7 @@ class MyPostsController extends GetxController {
       if (revertIndex != -1) {
         await loadMyPosts(); // Reload to get correct state
       }
-      
+
       Get.snackbar(
         'خطأ',
         'فشل في تسجيل الإعجاب: $error',
@@ -201,7 +152,7 @@ class MyPostsController extends GetxController {
   Future<void> incrementViews(String postId) async {
     try {
       await _postsService.incrementPostViews(postId);
-      
+
       // Update post views in list
       final postIndex = myPosts.indexWhere((post) => post.id == postId);
       if (postIndex != -1) {

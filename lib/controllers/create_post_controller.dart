@@ -143,7 +143,8 @@ class CreatePostController extends GetxController {
             validFiles.add(file);
           } else {
             final fileSizeInMB = _getFileSizeInMB(file);
-            final fileName = image.name.isNotEmpty ? image.name : 'صورة غير معروفة';
+            final fileName =
+                image.name.isNotEmpty ? image.name : 'صورة غير معروفة';
             _showFileSizeError(fileName, fileSizeInMB);
           }
         }

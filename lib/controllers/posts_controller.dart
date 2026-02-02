@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:insta/constants/app_constants.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/post_model.dart';
 import '../services/posts_service.dart';
@@ -26,13 +27,13 @@ class PostsController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    
+
     // Initialize PostsService if not already initialized
     if (!Get.isRegistered<PostsService>()) {
       Get.put(PostsService());
     }
     _postsService = Get.find<PostsService>();
-    
+
     loadPosts();
     _setupRealtimeSubscription();
   }
@@ -46,50 +47,35 @@ class PostsController extends GetxController {
   // Setup real-time subscription for posts
   void _setupRealtimeSubscription() {
     try {
-      _postsSubscription = supabase
-          .channel('posts_changes')
-          .onPostgresChanges(
-            event: PostgresChangeEvent.insert,
-            schema: 'public',
-            table: 'posts',
-            callback: (payload) {
-              _handleNewPost(payload.newRecord);
-            },
-          )
-          .onPostgresChanges(
-            event: PostgresChangeEvent.update,
-            schema: 'public',
-            table: 'posts',
-            callback: (payload) {
-              _handleUpdatedPost(payload.newRecord);
-            },
-          )
-          .onPostgresChanges(
-            event: PostgresChangeEvent.delete,
-            schema: 'public',
-            table: 'posts',
-            callback: (payload) {
-              _handleDeletedPost(payload.oldRecord['id']);
-            },
-          )
-          // Listen to likes changes
-          .onPostgresChanges(
-            event: PostgresChangeEvent.insert,
-            schema: 'public',
-            table: 'post_likes',
-            callback: (payload) {
-              _handleLikeChange(payload.newRecord, true);
-            },
-          )
-          .onPostgresChanges(
-            event: PostgresChangeEvent.delete,
-            schema: 'public',
-            table: 'post_likes',
-            callback: (payload) {
-              _handleLikeChange(payload.oldRecord, false);
-            },
-          )
-          .subscribe();
+      _postsSubscription =
+          supabase
+              .channel('posts_changes')
+              .onPostgresChanges(
+                event: PostgresChangeEvent.insert,
+                schema: 'public',
+                table: AppConstants.postsTable,
+                callback: (payload) {
+                  _handleNewPost(payload.newRecord);
+                },
+              )
+              // Listen to likes changes
+              .onPostgresChanges(
+                event: PostgresChangeEvent.insert,
+                schema: 'public',
+                table: AppConstants.postLikesTable,
+                callback: (payload) {
+                  _handleLikeChange(payload.newRecord, true);
+                },
+              )
+              .onPostgresChanges(
+                event: PostgresChangeEvent.delete,
+                schema: 'public',
+                table: AppConstants.postLikesTable,
+                callback: (payload) {
+                  _handleLikeChange(payload.oldRecord, false);
+                },
+              )
+              .subscribe();
     } catch (e) {
       debugPrint('Error setting up real-time subscription: $e');
     }
@@ -99,11 +85,12 @@ class PostsController extends GetxController {
   void _handleNewPost(Map<String, dynamic> postData) {
     try {
       final newPost = PostModel.fromJson(postData);
-      
+
       // Add to the beginning of the list if it matches current filter
-      if (currentFilter.value == 'trending' || currentFilter.value == 'recent') {
+      if (currentFilter.value == 'trending' ||
+          currentFilter.value == 'recent') {
         posts.insert(0, newPost);
-        
+
         // Show notification for new post
         Get.snackbar(
           'منشور جديد',
@@ -119,53 +106,28 @@ class PostsController extends GetxController {
     }
   }
 
-  // Handle updated post from real-time
-  void _handleUpdatedPost(Map<String, dynamic> postData) {
-    try {
-      final updatedPost = PostModel.fromJson(postData);
-      final index = posts.indexWhere((post) => post.id == updatedPost.id);
-      
-      if (index != -1) {
-        posts[index] = updatedPost;
-      }
-    } catch (e) {
-      debugPrint('Error handling updated post: $e');
-    }
-  }
-
-  // Handle deleted post from real-time
-  void _handleDeletedPost(String postId) {
-    try {
-      posts.removeWhere((post) => post.id == postId);
-    } catch (e) {
-      debugPrint('Error handling deleted post: $e');
-    }
-  }
-
   // Handle like/unlike changes from real-time
   void _handleLikeChange(Map<String, dynamic> likeData, bool isLiked) {
     try {
       final postId = likeData['post_id'];
       final userId = likeData['user_id'];
       final currentUserId = supabase.auth.currentUser?.id;
-      
+
       final postIndex = posts.indexWhere((post) => post.id == postId);
       if (postIndex != -1) {
         final currentPost = posts[postIndex];
-        
+
         // Update like count
-        final newLikesCount = isLiked 
-          ? currentPost.likesCount + 1 
-          : currentPost.likesCount - 1;
-        
+        final newLikesCount =
+            isLiked ? currentPost.likesCount + 1 : currentPost.likesCount - 1;
+
         // Update current user's like status if it's their action
         final isCurrentUserAction = userId == currentUserId;
-        
+
         posts[postIndex] = currentPost.copyWith(
           likesCount: newLikesCount,
-          isLikedByCurrentUser: isCurrentUserAction 
-            ? isLiked 
-            : currentPost.isLikedByCurrentUser,
+          isLikedByCurrentUser:
+              isCurrentUserAction ? isLiked : currentPost.isLikedByCurrentUser,
         );
       }
     } catch (e) {
@@ -175,42 +137,39 @@ class PostsController extends GetxController {
 
   // Load posts
   Future<void> loadPosts({bool refresh = false}) async {
-    await ErrorHandler.safeAsyncOperation(
-      () async {
-        if (refresh) {
-          _currentPage = 0;
-          hasMorePosts.value = true;
-          posts.clear();
-        }
+    await ErrorHandler.safeAsyncOperation(() async {
+      if (refresh) {
+        _currentPage = 0;
+        hasMorePosts.value = true;
+        posts.clear();
+      }
 
-        if (!hasMorePosts.value) return;
+      if (!hasMorePosts.value) return;
 
-        if (_currentPage == 0) {
-          isLoading.value = true;
-        } else {
-          isLoadingMore.value = true;
-        }
+      if (_currentPage == 0) {
+        isLoading.value = true;
+      } else {
+        isLoadingMore.value = true;
+      }
 
-        final newPosts = await _postsService.getPosts(
-          limit: _postsPerPage,
-          offset: _currentPage * _postsPerPage,
-          orderBy: currentFilter.value,
-        );
+      final newPosts = await _postsService.getPosts(
+        limit: _postsPerPage,
+        offset: _currentPage * _postsPerPage,
+        orderBy: currentFilter.value,
+      );
 
-        if (newPosts.length < _postsPerPage) {
-          hasMorePosts.value = false;
-        }
+      if (newPosts.length < _postsPerPage) {
+        hasMorePosts.value = false;
+      }
 
-        if (refresh) {
-          posts.value = newPosts;
-        } else {
-          posts.addAll(newPosts);
-        }
+      if (refresh) {
+        posts.value = newPosts;
+      } else {
+        posts.addAll(newPosts);
+      }
 
-        _currentPage++;
-      },
-      context: 'تحميل المنشورات',
-    );
+      _currentPage++;
+    }, context: 'تحميل المنشورات');
 
     isLoading.value = false;
     isLoadingMore.value = false;
@@ -251,11 +210,11 @@ class PostsController extends GetxController {
           );
           return;
         }
-        
+
         // Add the post to local list and continue
         posts.add(postFromDb);
         final newIndex = posts.length - 1;
-        
+
         // Update the like status
         await _updatePostLike(newIndex, postId);
         return;
@@ -263,7 +222,6 @@ class PostsController extends GetxController {
 
       // Post found in local list
       await _updatePostLike(postIndex, postId);
-      
     } catch (error) {
       Get.snackbar(
         'خطأ',
@@ -277,12 +235,11 @@ class PostsController extends GetxController {
   // Helper method to update post like
   Future<void> _updatePostLike(int postIndex, String postId) async {
     final currentPost = posts[postIndex];
-    
+
     // Update UI immediately for better UX
     final newLikeStatus = !currentPost.isLikedByCurrentUser;
-    final newLikesCount = newLikeStatus 
-      ? currentPost.likesCount + 1 
-      : currentPost.likesCount - 1;
+    final newLikesCount =
+        newLikeStatus ? currentPost.likesCount + 1 : currentPost.likesCount - 1;
 
     posts[postIndex] = currentPost.copyWith(
       isLikedByCurrentUser: newLikeStatus,
@@ -292,7 +249,7 @@ class PostsController extends GetxController {
     // Then update database
     try {
       await _postsService.togglePostLike(postId);
-      
+
       // Get updated post data from database to ensure consistency
       final updatedPostData = await _postsService.getPostById(postId);
       if (updatedPostData != null) {
@@ -315,7 +272,7 @@ class PostsController extends GetxController {
   Future<void> incrementViews(String postId) async {
     try {
       await _postsService.incrementPostViews(postId);
-      
+
       // Update post views in list
       final postIndex = posts.indexWhere((post) => post.id == postId);
       if (postIndex != -1) {

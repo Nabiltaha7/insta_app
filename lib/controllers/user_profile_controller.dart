@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:insta/constants/app_constants.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/post_model.dart';
 import '../models/user_profile_model.dart';
@@ -70,7 +71,7 @@ class UserProfileController extends GetxController {
           .onPostgresChanges(
             event: PostgresChangeEvent.insert,
             schema: 'public',
-            table: 'followers',
+            table: AppConstants.followersTable,
             filter: PostgresChangeFilter(
               type: PostgresChangeFilterType.eq,
               column: 'following_id',
@@ -84,7 +85,7 @@ class UserProfileController extends GetxController {
           .onPostgresChanges(
             event: PostgresChangeEvent.delete,
             schema: 'public',
-            table: 'followers',
+            table: AppConstants.followersTable,
             filter: PostgresChangeFilter(
               type: PostgresChangeFilterType.eq,
               column: 'following_id',
@@ -182,7 +183,7 @@ class UserProfileController extends GetxController {
     try {
       debugPrint('Loading follow counts for user: $userId');
       final counts = await _userProfileService.getFollowCounts(userId);
-      followersCount.value = counts['followers'] ?? 0;
+      followersCount.value = counts[AppConstants.followersTable] ?? 0;
       followingCount.value = counts['following'] ?? 0;
       debugPrint('Loaded follow counts - Followers: ${followersCount.value}, Following: ${followingCount.value}');
     } catch (e) {

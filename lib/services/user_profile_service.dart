@@ -23,11 +23,12 @@ class UserProfileService extends GetxService {
   Future<UserProfileModel?> getUserProfile(String userId) async {
     try {
       debugPrint('Getting user profile for: $userId');
-      final response = await supabase
-          .from(AppConstants.usersTable)
-          .select('*')
-          .eq('id', userId)
-          .single();
+      final response =
+          await supabase
+              .from(AppConstants.usersTable)
+              .select('*')
+              .eq('id', userId)
+              .single();
 
       debugPrint('User profile response: $response');
       return UserProfileModel.fromJson(response);
@@ -40,11 +41,12 @@ class UserProfileService extends GetxService {
   // Get user profile by username
   Future<UserProfileModel?> getUserProfileByUsername(String username) async {
     try {
-      final response = await supabase
-          .from(AppConstants.usersTable)
-          .select('*')
-          .eq('username', username)
-          .single();
+      final response =
+          await supabase
+              .from(AppConstants.usersTable)
+              .select('*')
+              .eq('username', username)
+              .single();
 
       return UserProfileModel.fromJson(response);
     } catch (error) {
@@ -57,7 +59,7 @@ class UserProfileService extends GetxService {
   Future<Map<String, int>> getFollowCounts(String userId) async {
     try {
       debugPrint('Getting follow counts for user: $userId');
-      
+
       // Get followers count
       final followersResponse = await supabase
           .from('followers')
@@ -72,13 +74,12 @@ class UserProfileService extends GetxService {
 
       final followersCount = (followersResponse as List).length;
       final followingCount = (followingResponse as List).length;
-      
-      debugPrint('Followers count: $followersCount, Following count: $followingCount');
 
-      return {
-        'followers': followersCount,
-        'following': followingCount,
-      };
+      debugPrint(
+        'Followers count: $followersCount, Following count: $followingCount',
+      );
+
+      return {'followers': followersCount, 'following': followingCount};
     } catch (error) {
       debugPrint('Error getting follow counts: $error');
       return {'followers': 0, 'following': 0};
@@ -88,12 +89,13 @@ class UserProfileService extends GetxService {
   // Check if user A follows user B
   Future<bool> isFollowing(String followerId, String followingId) async {
     try {
-      final response = await supabase
-          .from('followers')
-          .select('id')
-          .eq('follower_id', followerId)
-          .eq('following_id', followingId)
-          .maybeSingle();
+      final response =
+          await supabase
+              .from('followers')
+              .select('id')
+              .eq('follower_id', followerId)
+              .eq('following_id', followingId)
+              .maybeSingle();
 
       return response != null;
     } catch (error) {
@@ -140,11 +142,15 @@ class UserProfileService extends GetxService {
     try {
       final response = await supabase
           .from('followers')
-          .select('follower_id, ${AppConstants.usersTable}!followers_follower_id_fkey(*)')
+          .select(
+            'follower_id, ${AppConstants.usersTable}!followers_follower_id_fkey(*)',
+          )
           .eq('following_id', userId);
 
       return (response as List)
-          .map((item) => UserProfileModel.fromJson(item[AppConstants.usersTable]))
+          .map(
+            (item) => UserProfileModel.fromJson(item[AppConstants.usersTable]),
+          )
           .toList();
     } catch (error) {
       debugPrint('Error getting user followers: $error');
@@ -157,11 +163,15 @@ class UserProfileService extends GetxService {
     try {
       final response = await supabase
           .from('followers')
-          .select('following_id, ${AppConstants.usersTable}!followers_following_id_fkey(*)')
+          .select(
+            'following_id, ${AppConstants.usersTable}!followers_following_id_fkey(*)',
+          )
           .eq('follower_id', userId);
 
       return (response as List)
-          .map((item) => UserProfileModel.fromJson(item[AppConstants.usersTable]))
+          .map(
+            (item) => UserProfileModel.fromJson(item[AppConstants.usersTable]),
+          )
           .toList();
     } catch (error) {
       debugPrint('Error getting user following: $error');
@@ -196,19 +206,21 @@ class UserProfileService extends GetxService {
   }) async {
     try {
       final updateData = <String, dynamic>{};
-      
+
       if (fullName != null) updateData['full_name'] = fullName;
       if (bio != null) updateData['bio'] = bio;
-      if (profileImageUrl != null) updateData['profile_image_url'] = profileImageUrl;
-      
+      if (profileImageUrl != null)
+        updateData['profile_image_url'] = profileImageUrl;
+
       updateData['updated_at'] = DateTime.now().toIso8601String();
 
-      final response = await supabase
-          .from(AppConstants.usersTable)
-          .update(updateData)
-          .eq('id', userId)
-          .select()
-          .single();
+      final response =
+          await supabase
+              .from(AppConstants.usersTable)
+              .update(updateData)
+              .eq('id', userId)
+              .select()
+              .single();
 
       return UserProfileModel.fromJson(response);
     } catch (error) {

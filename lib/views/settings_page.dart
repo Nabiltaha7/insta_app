@@ -26,27 +26,27 @@ class SettingsPage extends GetView<SettingsController> {
             // Account section
             _buildSectionHeader('account'.tr),
             _buildAccountSection(controller),
-            
+
             const SizedBox(height: 24),
-            
+
             // Privacy section
             _buildSectionHeader('privacy'.tr),
             _buildPrivacySection(controller),
-            
+
             const SizedBox(height: 24),
-            
+
             // App settings section
             _buildSectionHeader('app_settings'.tr),
             _buildAppSettingsSection(controller),
-            
+
             const SizedBox(height: 24),
-            
+
             // Developer section
             _buildSectionHeader('developer'.tr),
             _buildDeveloperSection(controller),
-            
+
             const SizedBox(height: 24),
-            
+
             // Logout section
             _buildLogoutSection(controller),
           ],
@@ -88,7 +88,6 @@ class SettingsPage extends GetView<SettingsController> {
             subtitle: Text('notifications'.tr),
             trailing: const Icon(Icons.arrow_forward_ios),
             onTap: () {
-              // TODO: Navigate to notifications settings
               Get.snackbar('قريباً', 'ستتوفر إعدادات الإشعارات قريباً');
             },
           ),
@@ -100,58 +99,66 @@ class SettingsPage extends GetView<SettingsController> {
   Widget _buildPrivacySection(SettingsController controller) {
     return Card(
       color: Get.theme.cardColor,
-      child: Obx(() => Column(
-        children: [
-          SwitchListTile(
-            secondary: const Icon(Icons.lock),
-            title: Text('private_account'.tr),
-            subtitle: Text('private_account'.tr),
-            value: controller.isPrivate.value,
-            onChanged: (value) => controller.togglePrivateAccount(value),
-          ),
-          const Divider(height: 1),
-          SwitchListTile(
-            secondary: const Icon(Icons.access_time),
-            title: Text('show_last_seen'.tr),
-            subtitle: Text('show_last_seen'.tr),
-            value: controller.showLastSeen.value,
-            onChanged: (value) => controller.toggleShowLastSeen(value),
-          ),
-          const Divider(height: 1),
-          SwitchListTile(
-            secondary: const Icon(Icons.message),
-            title: Text('allow_messages'.tr),
-            subtitle: Text('allow_messages'.tr),
-            value: controller.allowMessagesFromEveryone.value,
-            onChanged: (value) => controller.toggleAllowMessages(value),
-          ),
-        ],
-      )),
+      child: Obx(
+        () => Column(
+          children: [
+            SwitchListTile(
+              secondary: const Icon(Icons.lock),
+              title: Text('private_account'.tr),
+              subtitle: Text('private_account'.tr),
+              value: controller.isPrivate.value,
+              onChanged: (value) => controller.togglePrivateAccount(value),
+            ),
+            const Divider(height: 1),
+            SwitchListTile(
+              secondary: const Icon(Icons.access_time),
+              title: Text('show_last_seen'.tr),
+              subtitle: Text('show_last_seen'.tr),
+              value: controller.showLastSeen.value,
+              onChanged: (value) => controller.toggleShowLastSeen(value),
+            ),
+            const Divider(height: 1),
+            SwitchListTile(
+              secondary: const Icon(Icons.message),
+              title: Text('allow_messages'.tr),
+              subtitle: Text('allow_messages'.tr),
+              value: controller.allowMessagesFromEveryone.value,
+              onChanged: (value) => controller.toggleAllowMessages(value),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
   Widget _buildAppSettingsSection(SettingsController controller) {
     return Card(
       color: Get.theme.cardColor,
-      child: Obx(() => Column(
-        children: [
-          SwitchListTile(
-            secondary: const Icon(Icons.dark_mode),
-            title: Text('dark_mode'.tr),
-            subtitle: Text('dark_mode'.tr),
-            value: controller.isDarkMode.value,
-            onChanged: (value) => controller.toggleDarkMode(value),
-          ),
-          const Divider(height: 1),
-          ListTile(
-            leading: const Icon(Icons.language),
-            title: Text('language'.tr),
-            subtitle: Text(controller.currentLanguage.value == 'ar' ? 'العربية' : 'English'),
-            trailing: const Icon(Icons.arrow_forward_ios),
-            onTap: () => controller.showLanguageDialog(),
-          ),
-        ],
-      )),
+      child: Obx(
+        () => Column(
+          children: [
+            SwitchListTile(
+              secondary: const Icon(Icons.dark_mode),
+              title: Text('dark_mode'.tr),
+              subtitle: Text('dark_mode'.tr),
+              value: controller.isDarkMode.value,
+              onChanged: (value) => controller.toggleDarkMode(value),
+            ),
+            const Divider(height: 1),
+            ListTile(
+              leading: const Icon(Icons.language),
+              title: Text('language'.tr),
+              subtitle: Text(
+                controller.currentLanguage.value == 'ar'
+                    ? 'العربية'
+                    : 'English',
+              ),
+              trailing: const Icon(Icons.arrow_forward_ios),
+              onTap: () => controller.showLanguageDialog(),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -177,10 +184,7 @@ class SettingsPage extends GetView<SettingsController> {
       color: Get.theme.cardColor,
       child: ListTile(
         leading: const Icon(Icons.logout, color: Colors.red),
-        title: Text(
-          'logout'.tr,
-          style: const TextStyle(color: Colors.red),
-        ),
+        title: Text('logout'.tr, style: const TextStyle(color: Colors.red)),
         subtitle: Text('logout'.tr),
         onTap: () => controller.showLogoutDialog(),
       ),

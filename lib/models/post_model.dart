@@ -6,7 +6,7 @@ class PostModel {
   final bool isUserVerified;
   final String? caption;
   final List<String> mediaUrls;
-  final String type; // 'image', 'carousel', 'text' (no video support)
+  final String type;
   final List<String> tags;
   final String? location;
   final int likesCount;
@@ -145,7 +145,8 @@ class PostModel {
       updatedAt: updatedAt ?? this.updatedAt,
       trendingScore: trendingScore ?? this.trendingScore,
       isPremiumContent: isPremiumContent ?? this.isPremiumContent,
-      hasPriorityInTrending: hasPriorityInTrending ?? this.hasPriorityInTrending,
+      hasPriorityInTrending:
+          hasPriorityInTrending ?? this.hasPriorityInTrending,
       isLikedByCurrentUser: isLikedByCurrentUser ?? this.isLikedByCurrentUser,
     );
   }

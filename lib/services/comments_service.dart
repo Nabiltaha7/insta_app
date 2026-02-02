@@ -10,7 +10,7 @@ class CommentsService extends GetxService {
   Future<List<CommentModel>> getPostComments(String postId) async {
     try {
       final response = await supabase
-          .from('comments')
+          .from(AppConstants.commentsTable)
           .select('*')
           .eq('post_id', postId)
           .isFilter('parent_comment_id', null)
@@ -58,7 +58,7 @@ class CommentsService extends GetxService {
   Future<List<CommentModel>> getCommentReplies(String commentId) async {
     try {
       final response = await supabase
-          .from('comments')
+          .from(AppConstants.commentsTable)
           .select('*')
           .eq('parent_comment_id', commentId)
           .order('created_at', ascending: true);
@@ -101,7 +101,7 @@ class CommentsService extends GetxService {
       };
 
       final response = await supabase
-          .from('comments')
+          .from(AppConstants.commentsTable)
           .insert(commentData)
           .select()
           .single();
@@ -122,7 +122,7 @@ class CommentsService extends GetxService {
 
       // Get current liked_by array
       final comment = await supabase
-          .from('comments')
+          .from(AppConstants.commentsTable)
           .select('liked_by')
           .eq('id', commentId)
           .single();
@@ -141,7 +141,7 @@ class CommentsService extends GetxService {
       }
 
       // Update comment
-      await supabase.from('comments').update({
+      await supabase.from(AppConstants.commentsTable).update({
         'liked_by': likedBy,
         'likes_count': likedBy.length,
       }).eq('id', commentId);
